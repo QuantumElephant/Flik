@@ -1,3 +1,4 @@
+"""
 An experimental local optimization package
 Copyright (C) 2018 Ayers Lab <ayers@mcmaster.ca>.
 
@@ -15,3 +16,5 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program; if not, see <http://www.gnu.org/licenses/>
+
+"""
