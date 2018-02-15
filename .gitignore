@@ -1,0 +1,11 @@
+*.pyc
+.coverage
+.eggs
+record.txt
+flik.egg-info
+build
+dist
+flik/version.py
+conda-bld
+
+.idea/
