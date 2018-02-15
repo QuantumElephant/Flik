@@ -1,7 +1,8 @@
 """Tests for flik.linesearch.conditions."""
+
 import numpy as np
 from numpy.testing import assert_raises
-from flik.linesearch.conditions import wolfe
+from flik.linesearch.conditions import wolfe, check_armijo
 
 
 def test_wolfe():
@@ -40,3 +41,32 @@ def test_wolfe():
     alpha = 0.1
     assert wolfe(grad, current_point, current_step, alpha, const2, strong_wolfe=False)
     assert not wolfe(grad, current_point, -current_step, alpha, const2, strong_wolfe=False)
+
+
+def test_armijo():
+    """Test for parameters in Armijo's condition"""
+    def fsq(var):
+        r"""Little function :math:`\sum_i x_i^2`"""
+        return np.sum(var**2)
+
+    def grad(var):
+        r"""Gradient the square function :math:`\sum_i x_i^2`"""
+        return 2*var
+
+    # Check const1
+    var = np.array([1.8])
+    alpha = 0.5
+    direction = - grad(var)
+    const1 = 2
+    assert_raises(TypeError, armijo, func=fsq, grad=grad, var=var,
+                  direction=direction, alpha=alpha, const1=const1)
+    const1 = 1.0
+    assert_raises(TypeError, armijo, func=fsq, grad=grad, var=var,
+                  direction=direction, alpha=alpha, const1=const1)
+
+    # Check condition
+    assert armijo(func=fsq, grad=grad, var=var, direction=direction,
+                  alpha=alpha)
+    direction = grad(var)
+    assert not armijo(func=fsq, grad=grad, var=var, direction=direction,
+                      alpha=alpha)

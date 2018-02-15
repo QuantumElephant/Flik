@@ -61,3 +61,43 @@ def wolfe(grad, current_point, current_step, alpha, const2=0.9, strong_wolfe=Tru
         return abs(left) <= abs(right)
     else:
         return left >= right
+
+
+def armijo(var=None, func=None, grad=None, direction=None, alpha=None, const1=1e-4):
+    r"""Check if Armijo condition is satisfied for certain alpha.
+
+    A sufficient decrease is measured by:
+    :math:`f(x_k + \alpha s_k) - f(x_k) \leq c_1 \alpha \nabla f(x_k)^T s_k`
+
+    Parameters:
+    -----------
+    func: callable
+        Objective function
+    grad: callable
+        Function to evaluate Gradient of the function
+    vec: np.ndarray((N,)), for N variables
+        Value of variables at k-iteration
+    desc: np.ndarray((N,)) for N variables
+        Descent direction
+    alpha: float
+        Step length
+    const1: float
+        Condition constant
+    Returns:
+    --------
+    bool
+        True if the condition is satisfied, False otherwise
+    """
+    check_input(func=func, grad=grad, var=var, direction=direction, alpha=alpha)
+    if not isinstance(const1, float):
+        raise TypeError("alpha should have a value between 0. and 1.")
+    if not 0.0 < const1 < 1.0:
+        raise ValueError("const1 should have a value between 0. and 1.")
+
+    # Evaluate the function and gradient
+    funck = func(var)
+    gradk = grad(var)
+    fstep = func(var + alpha*direction)
+
+    # Check the condition
+    return fstep - funck <= const1*alpha*direction.dot(gradk)
