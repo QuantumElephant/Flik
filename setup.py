@@ -40,7 +40,7 @@ def get_version():
     version string with single quotes.
 
     """
-    with open('Flik/version.py', 'r') as f:
+    with open('flik/version.py', 'r') as f:
         return f.read().split('=')[-1].replace('\'', '').strip()
 
 
@@ -51,13 +51,13 @@ def readme():
 
 
 setup(
-    name='Flik',
+    name='flik',
     version=get_version(),
     description='An experimental local optimization package',
     long_description=readme(),
     author='Ayers Lab',
     author_email='ayers@mcmaster.ca',
     url='https://github.com/QuantumElephant/Flik',
-    packages=['Flik'],
+    packages=['flik'],
     zip_safe=False,
 )
