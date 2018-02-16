@@ -54,3 +54,56 @@ def strong_wolfe(grad, current_point, current_step, alpha, c_2=0.9):
     current_grad = grad(current_point)
     next_grad = grad(current_point + alpha*current_step)
     return abs(current_step.dot(next_grad)) <= c_2*abs(current_step.dot(current_grad))
+
+
+def soft_wolfe(grad, val, alpha, direction, const2=0.9):
+    """
+    Soft-wolfe (curvature) condition.
+
+    Parameters
+    ----------
+    grad: callable
+        Gradient of objective nonlinear function
+    val: np.ndarray(N,)
+        Objective function value
+    alpha: float
+        Step length
+    direction: np.ndarray(N,)
+        Descent direction
+    const2: float
+        Constant C2
+
+    Raises
+    ------
+    ValueError
+        If C2 is not between 0 and 1
+    TypeError
+        If gradient function is not a function
+        If gradient function does not return 1-dim array
+
+    Returns
+    -------
+    bool
+        True if curvature condition is satisfied
+
+    """
+    # Check parameters
+    if not (isinstance(val, np.ndarray) and val.ndim == 1):
+        raise TypeError('Variable should be a 1-dim array of float')
+    if not (isinstance(direction, np.ndarray) and direction.ndim == 1):
+        raise TypeError('Descent direction should be a 1-dim array of float')
+    if not isinstance(alpha, float):
+        raise TypeError('Alpha should be a float')
+    if val.size != direction.size:
+        raise ValueError('Size of direction and variable should be same')
+    if not 0 < const2 < 1:
+        raise ValueError('C2 is not within boundary')
+    if not callable(grad):
+        raise TypeError('Gradient function should be a function')
+    if not isinstance(grad(val), np.ndarray):
+        raise TypeError('Gradient of function should return 1-dim array')
+
+    left_con = direction.dot(grad(val + alpha * direction))
+    right_con = const2 * direction.dot(grad(val))
+
+    return left_con >= right_con
