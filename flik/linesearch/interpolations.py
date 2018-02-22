@@ -169,3 +169,61 @@ def bs2(alpha_1, alpha_2):
         raise ValueError("alpha_2 should be in the interval [0,1]")
 
     return (alpha_1 + alpha_2)/2.0
+
+
+def quad_approx(func, grad, val, alpha, direction):
+    """
+    Quadratic Approximation
+
+    Parameters
+    ----------
+    func: callable
+        Scalar-valued function in form f(xk), where xk is is a 1-dim array
+    grad: callable
+        Vector-valued gradient function in form f'(xk), where xk is 1-dim array
+    val: np.ndarray(N,)
+        Objective function value
+    alpha: float
+        Step length
+    direction: np.ndarray(N,)
+        Descent direction
+
+    Raises
+    ------
+    TypeError
+        If func is not callable
+        If grad is not callable
+        If variable is not 1-dim array of float
+        If descent direction is not 1-dim array of float
+        If alpha is not float
+        If alpha_one is not float
+        If func does not return float
+        If grad does not return np.ndarray
+    ValueError
+        If descent direction and value is not the same size
+        If alpha is not between zero and one
+        If alpha_one is not between zero and alpha
+
+    Returns
+    -------
+    alpha_one: float
+        New step length
+    """
+    # Check parameters
+    check_input(var=val, func=func, grad=grad, direction=direction, alpha=alpha)
+
+    # Set up functions
+    phi_zero = func(val)
+    phi_zero_prime = grad(val).dot(direction)
+    phi_alpha = func(val + alpha * direction)
+
+    # New alpha approximation
+    alpha_one = -(phi_zero_prime * alpha**2) / (2 * (phi_alpha - phi_zero - phi_zero_prime * alpha))
+
+    # Check new alpha
+    if not isinstance(alpha_one, float):
+        raise TypeError('New alpha is not a float.It is {}'.format(type(alpha_one)))
+    if not 0 < alpha_one < alpha:
+        raise ValueError('New alpha should be greater than zero smaller than alpha.')
+
+    return alpha_one
