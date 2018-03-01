@@ -43,8 +43,8 @@ def test_input_control():
     # check alpha
     assert_raises(TypeError, check_input, alpha=np.array([1]))
     assert_raises(ValueError, check_input, alpha=2)
-    assert_raises(ValueError, check_input, alpha=0)
     assert_raises(ValueError, check_input, alpha=-1)
+    check_input(alpha=0)
     check_input(alpha=1)
     check_input(alpha=1.0)
     check_input(alpha=0.5)
