@@ -1,4 +1,5 @@
 """Interpolations for step length selection."""
+import random as rd
 import numpy as np
 from flik.linesearch.tools import check_input
 
@@ -92,3 +93,77 @@ def cubic_interpolation(var, func, grad, direction, alpha_prev, alpha_current,
          alpha_next: phi_current(alpha_next)}
 
     return min(d, key=d.get)
+
+def bs1(alpha_1, alpha_2):
+    """Return random number inside the interval.
+
+    Parameters
+    ----------
+    alpha_1: float
+        First bound
+    alpha_2: float
+        Second bound
+
+    Raises
+    -------
+    TypeError
+        If alpha_1 and alpha_2 are not floats
+    ValueError
+        If alpha_1 and alpha_2 are not in the interval [0,1]
+
+    Returns
+    -------
+    float
+        Random number between alpha_1 and alpha_2
+
+    """
+    if not isinstance(alpha_1, float):
+        raise TypeError("alpha_1 should be a float")
+
+    if not isinstance(alpha_2, float):
+        raise TypeError("alpha_2 should be a float")
+
+    if not 0.0 <= alpha_1 <= 1.0:
+        raise ValueError("alpha_1 should be in the interval [0,1]")
+
+    if not 0.0 <= alpha_2 <= 1.0:
+        raise ValueError("alpha_2 should be in the interval [0,1]")
+
+    return rd.uniform(alpha_1, alpha_2)
+
+def bs2(alpha_1, alpha_2):
+    """Bisect an alpha interval.
+
+    Parameters
+    ----------
+    alpha_1: float
+        First bound
+    alpha_2: float
+        Second bound
+
+    Raises
+    -------
+    TypeError
+        If alpha_1 and alpha_2 are not floats
+    ValueError
+        If alpha_1 and alpha_2 are not in the interval [0,1]
+
+    Returns
+    -------
+    float
+        The average of alpha_1 and alpha_2
+
+    """
+    if not isinstance(alpha_1, float):
+        raise TypeError("alpha_1 should be a float")
+
+    if not isinstance(alpha_2, float):
+        raise TypeError("alpha_2 should be a float")
+
+    if not 0.0 <= alpha_1 <= 1.0:
+        raise ValueError("alpha_1 should be in the interval [0,1]")
+
+    if not 0.0 <= alpha_2 <= 1.0:
+        raise ValueError("alpha_2 should be in the interval [0,1]")
+
+    return (alpha_1 + alpha_2)/2.0

@@ -2,7 +2,7 @@
 
 import numpy as np
 from nose.tools import assert_raises
-from flik.linesearch.interpolations import cubic_interpolation
+from flik.linesearch.interpolations import cubic_interpolation, bs1, bs2
 
 
 def test_cubic_interpolation():
@@ -36,3 +36,45 @@ def test_cubic_interpolation():
     # a manual calculation shows that the return of the function should be
     assert np.abs(cubic_interpolation(var, func, grad, direction, alpha_1, alpha_2,
                                       interval_start, interval_end) - 0.2) < 1e-8
+
+def test_bs1():
+    """Test random-generating bisection method."""
+    # Set parameters
+
+    alpha_1 = 0.1
+    alpha_2 = 0.9
+
+    # Checking input quality
+
+    alpha_1_w = 1
+    assert_raises(TypeError, bs1, alpha_1_w, alpha_2)
+    alpha_2_w = 2
+    assert_raises(TypeError, bs1, alpha_1, alpha_2_w)
+    alpha_1_w = 1.5
+    assert_raises(ValueError, bs1, alpha_1_w, alpha_2)
+    alpha_2_w = 2.5
+    assert_raises(ValueError, bs1, alpha_1, alpha_2_w)
+
+    # Checking output
+    assert 0.0 <= bs1(alpha_1, alpha_2) <= 1.0
+
+def test_bs2():
+    """Test for simple (average) bisection method."""
+    # Set parameters
+
+    alpha_1 = 0.9
+    alpha_2 = 0.1
+
+    # Checking input quality
+
+    alpha_1_w = 1
+    assert_raises(TypeError, bs2, alpha_1_w, alpha_2)
+    alpha_2_w = 2
+    assert_raises(TypeError, bs2, alpha_1, alpha_2_w)
+    alpha_1_w = 1.5
+    assert_raises(ValueError, bs2, alpha_1_w, alpha_2)
+    alpha_2_w = 2.5
+    assert_raises(ValueError, bs2, alpha_1, alpha_2_w)
+
+    # Checking output
+    assert bs2(alpha_1, alpha_2) == 0.5
