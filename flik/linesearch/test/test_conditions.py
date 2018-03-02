@@ -2,7 +2,7 @@
 
 import numpy as np
 from numpy.testing import assert_raises
-from flik.linesearch.conditions import wolfe, check_armijo
+from flik.linesearch.conditions import wolfe, armijo
 
 
 def test_wolfe():
@@ -20,6 +20,8 @@ def test_wolfe():
     const2_w = 1
     assert_raises(TypeError, wolfe, grad, current_point, current_step, alpha, const2_w)
     const2_w = -0.209
+    assert_raises(ValueError, wolfe, grad, current_point, current_step, alpha, const2_w)
+    const2_w = 2.0
     assert_raises(ValueError, wolfe, grad, current_point, current_step, alpha, const2_w)
 
     # Making current_point and current_step float and int
@@ -42,31 +44,31 @@ def test_wolfe():
     assert wolfe(grad, current_point, current_step, alpha, const2, strong_wolfe=False)
     assert not wolfe(grad, current_point, -current_step, alpha, const2, strong_wolfe=False)
 
+    assert wolfe(grad, current_point, current_step, alpha, const2, strong_wolfe=False)
+    assert not wolfe(grad, current_point, -current_step, alpha, const2, strong_wolfe=False)
+
 
 def test_armijo():
-    """Test for parameters in Armijo's condition"""
+    """Test Armijo condition."""
     def fsq(var):
-        r"""Little function :math:`\sum_i x_i^2`"""
+        r"""Little function :math:`\sum_i x_i^2`."""
         return np.sum(var**2)
 
     def grad(var):
-        r"""Gradient the square function :math:`\sum_i x_i^2`"""
+        r"""Gradient the square function :math:`\sum_i x_i^2`."""
         return 2*var
 
     # Check const1
     var = np.array([1.8])
+    direction = grad(var)
     alpha = 0.5
-    direction = - grad(var)
-    const1 = 2
-    assert_raises(TypeError, armijo, func=fsq, grad=grad, var=var,
-                  direction=direction, alpha=alpha, const1=const1)
-    const1 = 1.0
-    assert_raises(TypeError, armijo, func=fsq, grad=grad, var=var,
-                  direction=direction, alpha=alpha, const1=const1)
+    assert_raises(TypeError, armijo, func=fsq, grad=grad, current_point=var,
+                  current_step=direction, alpha=alpha, const1=2)
+    assert_raises(ValueError, armijo, func=fsq, grad=grad, current_point=var,
+                  current_step=direction, alpha=alpha, const1=1.0)
+    assert_raises(ValueError, armijo, func=fsq, grad=grad, current_point=var,
+                  current_step=direction, alpha=alpha, const1=-1.0)
 
     # Check condition
-    assert armijo(func=fsq, grad=grad, var=var, direction=direction,
-                  alpha=alpha)
-    direction = grad(var)
-    assert not armijo(func=fsq, grad=grad, var=var, direction=direction,
-                      alpha=alpha)
+    assert armijo(fsq, grad, var, direction, alpha=alpha)
+    assert not armijo(fsq, grad, var, -direction, alpha=alpha)

@@ -63,41 +63,44 @@ def wolfe(grad, current_point, current_step, alpha, const2=0.9, strong_wolfe=Tru
         return left >= right
 
 
-def armijo(var=None, func=None, grad=None, direction=None, alpha=None, const1=1e-4):
-    r"""Check if Armijo condition is satisfied for certain alpha.
+def armijo(func, grad, current_point, current_step, alpha, const1=1e-4):
+    r"""Check if given alpha satisfies the Armijo condition.
 
-    A sufficient decrease is measured by:
+    Armijo condition is satisfied if
     :math:`f(x_k + \alpha s_k) - f(x_k) \leq c_1 \alpha \nabla f(x_k)^T s_k`
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     func: callable
-        Objective function
+        Objective function.
     grad: callable
-        Function to evaluate Gradient of the function
-    vec: np.ndarray((N,)), for N variables
-        Value of variables at k-iteration
-    desc: np.ndarray((N,)) for N variables
-        Descent direction
+        Function to evaluate gradient of the function.
+    current_point: {np.ndarray(N,), float, int}
+        Value of variables at k-iteration.
+    current_step: {np.ndarray(N,), float, int}
+        Descent direction.
     alpha: float
         Step length
-    const1: float
-        Condition constant
-    Returns:
-    --------
+    const1: {float, 1e-4}
+        Condition parameter.
+
+    Returns
+    -------
     bool
-        True if the condition is satisfied, False otherwise
+        True if the condition is satisfied, False otherwise.
+
     """
-    check_input(func=func, grad=grad, var=var, direction=direction, alpha=alpha)
+    check_input(func=func, grad=grad, var=current_point, direction=current_step,
+                alpha=alpha)
     if not isinstance(const1, float):
-        raise TypeError("alpha should have a value between 0. and 1.")
+        raise TypeError("const1 should be float")
     if not 0.0 < const1 < 1.0:
         raise ValueError("const1 should have a value between 0. and 1.")
 
     # Evaluate the function and gradient
-    funck = func(var)
-    gradk = grad(var)
-    fstep = func(var + alpha*direction)
+    func_current = func(current_point)
+    grad_current = grad(current_point)
+    func_step = func(current_point + alpha*current_step)
 
     # Check the condition
-    return fstep - funck <= const1*alpha*direction.dot(gradk)
+    return func_current - func_step <= const1 * alpha * current_step.dot(grad_current)
