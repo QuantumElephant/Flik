@@ -103,4 +103,4 @@ def armijo(func, grad, point, step, alpha, const1=1e-4):
     func_step = func(point + alpha*step)
 
     # Check the condition
-    return func_current - func_step <= const1 * alpha * step.dot(grad_current)
+    return func_step - func_current <= const1 * alpha * step.dot(grad_current)

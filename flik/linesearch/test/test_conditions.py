@@ -70,5 +70,5 @@ def test_armijo():
                   step=direction, alpha=alpha, const1=-1.0)
 
     # Check condition
-    assert armijo(fsq, grad, var, direction, alpha=alpha)
-    assert not armijo(fsq, grad, var, -direction, alpha=alpha)
+    assert not armijo(fsq, grad, var, direction, alpha=alpha)
+    assert armijo(fsq, grad, var, -direction, alpha=alpha)

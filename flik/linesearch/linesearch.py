@@ -69,12 +69,11 @@ def line_search_general(var, func, grad, direction, alpha, conditions,
         output = []
         for condition in conditions:
             if condition == 'soft-wolfe':
-                output.append(wolfe(grad, var, -direction, alpha_new, strong_wolfe=False))
+                output.append(wolfe(grad, var, direction, alpha_new, strong_wolfe=False))
             elif condition == 'strong-wolfe':
-                output.append(wolfe(grad, var, -direction, alpha_new, strong_wolfe=True))
+                output.append(wolfe(grad, var, direction, alpha_new, strong_wolfe=True))
             elif condition == 'armijo':
-                output.append(armijo(func, grad, var, -direction, alpha_new))
-        print(output)
+                output.append(armijo(func, grad, var, direction, alpha_new))
         return all(output)
 
     def interpolate(interpolation, alpha_new):
@@ -90,7 +89,6 @@ def line_search_general(var, func, grad, direction, alpha, conditions,
     alpha_new = 1.0
     while True:
         alpha_new = interpolate(interpolation, alpha_new)
-        print(alpha_new, alpha)
         for condition in conditions:
             if satisfies_conditions(alpha_new):
                 return alpha_new

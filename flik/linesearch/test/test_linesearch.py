@@ -53,6 +53,6 @@ def test_linesearch_general():
     assert 0 < line_search_general(var, func, grad, step, alpha,
                                    'armijo', 'cubic') <= 1.0
     assert 0 < line_search_general(var, func, grad, step, alpha,
-                                   'strong-wolfe', 'bs1') <= 1.0
+                                   ['armijo', 'strong-wolfe'], 'bs1') <= 1.0
     assert 0 < line_search_general(var, func, grad, step, alpha,
                                    'soft-wolfe', 'bs2') <= 1.0
