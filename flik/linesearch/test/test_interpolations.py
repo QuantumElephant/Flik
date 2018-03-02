@@ -37,6 +37,7 @@ def test_cubic_interpolation():
     assert np.abs(cubic_interpolation(var, func, grad, direction, alpha_1, alpha_2,
                                       interval_start, interval_end) - 0.2) < 1e-8
 
+
 def test_bs1():
     """Test random-generating bisection method."""
     # Set parameters
@@ -57,6 +58,7 @@ def test_bs1():
 
     # Checking output
     assert 0.0 <= bs1(alpha_1, alpha_2) <= 1.0
+
 
 def test_bs2():
     """Test for simple (average) bisection method."""

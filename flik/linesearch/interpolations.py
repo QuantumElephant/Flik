@@ -94,6 +94,7 @@ def cubic_interpolation(var, func, grad, direction, alpha_prev, alpha_current,
 
     return min(d, key=d.get)
 
+
 def bs1(alpha_1, alpha_2):
     """Return random number inside the interval.
 
@@ -130,6 +131,7 @@ def bs1(alpha_1, alpha_2):
         raise ValueError("alpha_2 should be in the interval [0,1]")
 
     return rd.uniform(alpha_1, alpha_2)
+
 
 def bs2(alpha_1, alpha_2):
     """Bisect an alpha interval.
