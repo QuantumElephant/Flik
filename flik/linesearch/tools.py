@@ -82,7 +82,7 @@ def check_input(*, var=None, direction=None, alpha=None,
     elif not isinstance(alpha, (int, float)):
         raise TypeError("Alpha should be provided as a float")
     elif not 0 <= alpha <= 1:
-        raise ValueError("Alpha value should be in the interval (0., 1.]")
+        raise ValueError("Alpha value should be in the interval [0., 1.]")
 
     name_dict = {'var': var, 'direction': direction, 'grad_val': grad_val}
     for name1, name2 in it.combinations(name_dict, 2):
