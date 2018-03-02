@@ -3,17 +3,17 @@ import numpy as np
 from flik.linesearch.tools import check_input
 
 
-def wolfe(grad, current_point, current_step, alpha, const2=0.9, strong_wolfe=True):
+def wolfe(grad, point, step, alpha, const2=0.9, strong_wolfe=True):
     """Check if the given alpha satisfies the Wolfe condition.
 
     Parameters
     ----------
     grad: callable
         Gradient of the objective function.
-    current_point: {np.ndarray(N,), float, int}
+    point: {np.ndarray(N,), float, int}
         Current iteration point.
         If a float or int is given, they are converted to a np.ndarray.
-    current_step: {np.ndarray(N,), float, int}
+    step: {np.ndarray(N,), float, int}
         Descent direction.
         If a float or int is given, they are converted to a np.ndarray.
     alpha: float
@@ -28,12 +28,12 @@ def wolfe(grad, current_point, current_step, alpha, const2=0.9, strong_wolfe=Tru
     -------
     TypeError
         If grad is not a callable object.
-        If current_point and current_step are not numpy arrays.
-        If current_point and current_step are not 1-dimensional vectors.
-        If the elements of current_point and current_step are not floats.
+        If point and step are not numpy arrays.
+        If point and step are not 1-dimensional vectors.
+        If the elements of point and step are not floats.
         If alpha and const2 are not floats.
     ValueError
-        If current_point and current_step have different sizes.
+        If point and step have different sizes.
         If alpha is not in the interval [0,1].
         If const2 is not in the interval (0,1).
 
@@ -43,19 +43,19 @@ def wolfe(grad, current_point, current_step, alpha, const2=0.9, strong_wolfe=Tru
         True if the condition is satisfied, False otherwise
 
     """
-    check_input(grad=grad, var=current_point, direction=current_step, alpha=alpha)
+    check_input(grad=grad, var=point, direction=step, alpha=alpha)
     if not isinstance(const2, float):
         raise TypeError("const2 should be a float")
     if not 0.0 < const2 < 1.0:
         raise ValueError("const2 should be in the interval (0, 1)")
 
-    if isinstance(current_point, (int, float)):
-        current_point = np.array(current_point, dtype=float, ndmin=1)
-    if isinstance(current_step, (int, float)):
-        current_step = np.array(current_step, dtype=float, ndmin=1)
+    if isinstance(point, (int, float)):
+        point = np.array(point, dtype=float, ndmin=1)
+    if isinstance(step, (int, float)):
+        step = np.array(step, dtype=float, ndmin=1)
 
-    left = current_step.dot(grad(current_point + alpha * current_step))
-    right = const2 * current_step.dot(grad(current_point))
+    left = step.dot(grad(point + alpha * step))
+    right = const2 * step.dot(grad(point))
 
     if strong_wolfe:
         return abs(left) <= abs(right)
@@ -63,7 +63,7 @@ def wolfe(grad, current_point, current_step, alpha, const2=0.9, strong_wolfe=Tru
         return left >= right
 
 
-def armijo(func, grad, current_point, current_step, alpha, const1=1e-4):
+def armijo(func, grad, point, step, alpha, const1=1e-4):
     r"""Check if given alpha satisfies the Armijo condition.
 
     Armijo condition is satisfied if
@@ -75,9 +75,9 @@ def armijo(func, grad, current_point, current_step, alpha, const1=1e-4):
         Objective function.
     grad: callable
         Function to evaluate gradient of the function.
-    current_point: {np.ndarray(N,), float, int}
+    point: {np.ndarray(N,), float, int}
         Value of variables at k-iteration.
-    current_step: {np.ndarray(N,), float, int}
+    step: {np.ndarray(N,), float, int}
         Descent direction.
     alpha: float
         Step length
@@ -90,7 +90,7 @@ def armijo(func, grad, current_point, current_step, alpha, const1=1e-4):
         True if the condition is satisfied, False otherwise.
 
     """
-    check_input(func=func, grad=grad, var=current_point, direction=current_step,
+    check_input(func=func, grad=grad, var=point, direction=step,
                 alpha=alpha)
     if not isinstance(const1, float):
         raise TypeError("const1 should be float")
@@ -98,9 +98,9 @@ def armijo(func, grad, current_point, current_step, alpha, const1=1e-4):
         raise ValueError("const1 should have a value between 0. and 1.")
 
     # Evaluate the function and gradient
-    func_current = func(current_point)
-    grad_current = grad(current_point)
-    func_step = func(current_point + alpha*current_step)
+    func_current = func(point)
+    grad_current = grad(point)
+    func_step = func(point + alpha*step)
 
     # Check the condition
-    return func_current - func_step <= const1 * alpha * current_step.dot(grad_current)
+    return func_current - func_step <= const1 * alpha * step.dot(grad_current)
