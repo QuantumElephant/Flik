@@ -75,7 +75,7 @@ def line_search_strong_wolfe(func, grad, current_point, current_step,
         return func(current_point + alpha*current_step)
 
     def deriv_phi(alpha):
-        """Derivative of the objective function of the line search."""
+        """Gradient of the objective function of the line search."""
         return current_step.dot(grad(current_point + alpha*current_step))
 
     previous_alpha = 0.0
