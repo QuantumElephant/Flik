@@ -17,18 +17,9 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 
 
-"""
-An experimental local optimization package.
-
-Copyright (C) 2018 Ayers Lab <ayers@mcmaster.ca>.
-
-"""
+.PHONY: all
+all: html
 
 
-from .nonlinear import newton_solve
-from .nonlinear import gauss_newton_solve
-
-from .approx_jacobian import ForwardDiffJacobian
-from .approx_jacobian import CentralDiffJacobian
-
-from .jacobian import Jacobian
+html:
+	mkdir -p html

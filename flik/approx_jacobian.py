@@ -38,10 +38,9 @@ where :math: `e_j` is the unit vector in dimension :math: `j` and :math:
 """
 
 
-from numbers import Integral
-from numbers import Real
-
+from numbers import Real, Integral
 import numpy as np
+from .jacobian import Jacobian
 
 
 __all__ = [
@@ -51,7 +50,7 @@ __all__ = [
     ]
 
 
-class FiniteDiffJacobian:
+class FiniteDiffJacobian(Jacobian):
     r"""
     Finite difference Jacobian approximation class.
 
@@ -85,23 +84,24 @@ class FiniteDiffJacobian:
 
         """
         # Handle default arguments
-        if n is None:
-            n = m
+        Jacobian.__init__(self, jac=None)
 
         # Check input types and values
+        if n is None:
+            n = m
         if not callable(f):
             raise TypeError("f must be a callable object")
         if not isinstance(m, Integral):
             raise TypeError("m must be an integral type")
         if not isinstance(n, Integral):
             raise TypeError("n must be an integral type")
-        if not (isinstance(eps, np.ndarray) and eps.ndim == 1):
-            if not isinstance(eps, Real):
-                raise TypeError("eps must be a float or 1-dimensional array")
         if m <= 0:
             raise ValueError("m must be > 0")
         if n <= 0:
             raise ValueError("n must be > 0")
+        if not (isinstance(eps, np.ndarray) and eps.ndim == 1):
+            if not isinstance(eps, Real):
+                raise TypeError("eps must be a float or 1-dimensional array")
         if isinstance(eps, np.ndarray):
             if eps.size != n:
                 raise ValueError("eps must be of the same length as the input vector")

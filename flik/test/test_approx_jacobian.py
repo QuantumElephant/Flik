@@ -45,7 +45,7 @@ np.random.seed(101010101)
 
 
 def f1(x):
-
+    """Test function."""
     y = np.copy(x)
     y **= 2
     y[0] += x[1]
@@ -54,7 +54,7 @@ def f1(x):
 
 
 def j1(x):
-
+    """Test function."""
     y = np.empty((2, 2), dtype=x.dtype)
     y[0, 0] = 2.0 * x[0]
     y[0, 1] = 1.0
@@ -64,7 +64,7 @@ def j1(x):
 
 
 def f2(x):
-
+    """Test function."""
     y = np.empty((3,), dtype=x.dtype)
     y[0] = x[0] * x[1]
     y[1] = x[0] ** 3 - np.sqrt(x[1])
@@ -73,7 +73,7 @@ def f2(x):
 
 
 def j2(x):
-
+    """Test function."""
     y = np.empty((3, 2), dtype=x.dtype)
     y[0, 0] = x[1]
     y[0, 1] = x[0]

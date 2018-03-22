@@ -31,6 +31,10 @@ solved in the least-squares sense using the Gauss-Newton method.
 
 from numbers import Integral
 from numbers import Real
+from .approx_jacobian import CentralDiffJacobian
+from .jacobian import Jacobian
+from .step import step_linear
+from .step import step_inv
 
 import numpy as np
 
@@ -41,7 +45,7 @@ __all__ = [
     ]
 
 
-def newton_solve(f, J, x_0, eps=1.0e-6, maxiter=100):
+def newton_solve(f, x_0, J=None, eps=1.0e-6, maxiter=100, method="analytic"):
     r"""
     Solve a system of nonlinear equations with the Newton method.
 
@@ -50,15 +54,19 @@ def newton_solve(f, J, x_0, eps=1.0e-6, maxiter=100):
     f : callable
         Vector-valued function corresponding to nonlinear system of equations.
         Must be of the form f(x), where x is a 1-dimensional array.
-    J : callable
-        Jacobian of function f. Must be of the form J(x), where x is a
-        1-dimensional array.
     x_0 : np.ndarray
         Solution initial guess.
+    J : callable, optional
+        Jacobian of function f. Must be of the form J(x), where x is a
+        1-dimensional array. If none is given, then the Jacobian is calculated
+        using finite differences.
     eps : float, optional
         Convergence threshold for vector function f norm.
     maxiter : int, optional
         Maximum number of iterations to perform.
+    method : str, optional
+        Update method for the (approximated) J(x) or the inverse of J(x). The
+        default uses Newton method.
 
     Returns
     -------
@@ -90,7 +98,7 @@ def newton_solve(f, J, x_0, eps=1.0e-6, maxiter=100):
     # Check input types and values
     if not callable(f):
         raise TypeError("Argument f should be callable")
-    if not callable(J):
+    if not callable(J) and J is not None:
         raise TypeError("Argument J should be callable")
     if not (isinstance(x_0, np.ndarray) and x_0.ndim == 1):
         raise TypeError("Argument x_0 should be a 1-dimensional numpy array")
@@ -98,10 +106,19 @@ def newton_solve(f, J, x_0, eps=1.0e-6, maxiter=100):
         raise TypeError("Argument eps should be a real number")
     if not isinstance(maxiter, Integral):
         raise TypeError("Argument maxiter should be an integer number")
+    if not isinstance(method, str):
+        raise TypeError("Argument method should be a string")
     if eps < 0.0:
         raise ValueError("Argument eps should be >= 0.0")
     if maxiter <= 0:
         raise ValueError("Argument maxiter should be >= 1")
+
+    # Handle default arguments
+    if J is None:
+        m = x_0.size
+        J = CentralDiffJacobian(f, m, eps=1e-12)
+    else:
+        J = Jacobian(J)
 
     # Convert optimization parameters to predictable types
     eps = float(eps)
@@ -110,6 +127,34 @@ def newton_solve(f, J, x_0, eps=1.0e-6, maxiter=100):
     # Calculate f_0 and J_0
     A = J(x_0)
     b = f(x_0)
+    x_k = x_0
+    x_k1 = x_0
+    # Choose the step function
+    if method in ("analytic", "good_broyden", "bfgs", "sr1", "dfp"):
+        step_function = step_linear
+    else:
+        step_function = step_inv
+        A = np.linalg.inv(A)
+
+    # Choose the update function
+    if method == "analytic":
+        update = J.update_analytic
+    elif method == "good_broyden":
+        update = Jacobian.update_goodbroyden
+    elif method == "bfgs":
+        update = Jacobian.update_approx_bfgs
+    elif method == "sr1":
+        update = Jacobian.update_sr1
+    elif method == "bad_broyden":
+        update = Jacobian.update_badbroyden
+    elif method == "bfgs_inv":
+        update = Jacobian.update_inv_bfgs
+    elif method == "sr1_inv":
+        update = Jacobian.update_sr1_inv
+    elif method == "dfp":
+        update = Jacobian.update_dfp
+    else:
+        raise ValueError("Argument method is not a valid option")
 
     # Check f and J return types
     if not (isinstance(b, np.ndarray) and b.ndim == 1):
@@ -119,43 +164,43 @@ def newton_solve(f, J, x_0, eps=1.0e-6, maxiter=100):
     if A.shape != (x_0.size, x_0.size):
         raise TypeError("J returns a vector of mismatched size")
 
-    # Newton method iterations
+    # Iterations
     success = False
     message = "Maximum number of iterations reached."
     for niter in range(1, maxiter + 1):
-        # Compute (b = -f)
+        f_k = np.copy(b)
         b *= -1
-        # Solve for dx (A * dx = b)
-        try:
-            dx = np.linalg.solve(A, b)
-        except np.linalg.LinAlgError:
+        # Calculate step function
+        dx = step_function(b, A)
+        if dx is None:
             message = "Singular Jacobian; no solution found."
-            b *= -1
             break
         # Take Newton step
-        x_0 += dx
+        x_k1 = x_k + dx
         # Evaluate function and Jacobian for next step or result
-        b = f(x_0)
-        A = J(x_0)
+        b = f(x_k1)
+        A = update(A, f_k, b, x_k, x_k1)
+        x_k = x_k1
         # Check for convergence
         if np.linalg.norm(b) < eps:
             # If so, we're done (SUCCESS)
             success = True
             message = "Convergence obtained."
             break
-
+    if step_function == step_inv:
+        A = np.linalg.inv(A)
     return {
         "success": success,
         "message": message,
         "niter": niter,
-        "x": x_0,
+        "x": x_k1,
         "f": b,
         "J": A,
         "eps": eps,
         }
 
 
-def gauss_newton_solve(f, J, x_0, eps=1.0e-6, maxiter=100):
+def gauss_newton_solve(f, x_0, J=None, eps=1.0e-6, maxiter=100, method="analytic"):
     r"""
     Solve a system of nonlinear equations in the least squares sense.
 
@@ -164,15 +209,19 @@ def gauss_newton_solve(f, J, x_0, eps=1.0e-6, maxiter=100):
     f : callable
         Vector-valued function corresponding to nonlinear system of equations.
         Must be of the form f(x), where x is a 1-dimensional array.
-    J : callable
-        Jacobian of function f. Must be of the form J(x), where x is a
-        1-dimensional array.
     x_0 : np.ndarray
         Solution initial guess.
+    J : callable, optional
+        Jacobian of function f. Must be of the form J(x), where x is a
+        1-dimensional array. If none is given, then the Jacobian is calculated
+        using finite differences.
     eps : float, optional
         Convergence threshold for vector function f norm.
     maxiter : int, optional
         Maximum number of iterations to perform.
+    method : str, optional
+        Update method for the (approximated) J(x) or the inverse of J(x). The
+        default uses Gauss-Newton method.
 
     Returns
     -------
@@ -204,18 +253,28 @@ def gauss_newton_solve(f, J, x_0, eps=1.0e-6, maxiter=100):
     # Check input types and values
     if not callable(f):
         raise TypeError("Argument f should be callable")
-    if not callable(J):
-        raise TypeError("Argument J should be callable")
     if not (isinstance(x_0, np.ndarray) and x_0.ndim == 1):
         raise TypeError("Argument x_0 should be a 1-dimensional numpy array")
     if not isinstance(eps, Real):
         raise TypeError("Argument eps should be a real number")
     if not isinstance(maxiter, Integral):
         raise TypeError("Argument maxiter should be an integer number")
+    if not isinstance(method, str):
+        raise TypeError("Argument method should be a string")
     if eps < 0.0:
         raise ValueError("Argument eps should be >= 0.0")
     if maxiter <= 0:
         raise ValueError("Argument maxiter should be >= 1")
+    if method not in ("analytic", "good_broyden", "bad_broyden", "bfgs"):
+        raise ValueError("Argument method is not a valid option")
+
+    # Handle default arguments
+    if J is None:
+        n = f(x_0).size
+        m = x_0.size
+        J = CentralDiffJacobian(f, n, m)
+    else:
+        J = Jacobian(J)
 
     # Convert optimization parameters to predictable types
     eps = float(eps)
