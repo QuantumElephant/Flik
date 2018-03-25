@@ -39,8 +39,10 @@ where :math: `e_j` is the unit vector in dimension :math: `j` and :math:
 
 
 from numbers import Real, Integral
+
 import numpy as np
-from .jacobian import Jacobian
+
+from flik.jacobian import Jacobian
 
 
 __all__ = [
@@ -51,13 +53,7 @@ __all__ = [
 
 
 class FiniteDiffJacobian(Jacobian):
-    r"""
-    Finite difference Jacobian approximation class.
-
-    A callable object that approximates the Jacobian of a function `f` using
-    a finite difference approximation.
-
-    """
+    r"""Finite difference Jacobian approximation class."""
 
     def __init__(self, f, m, n=None, eps=1.0e-4):
         r"""
@@ -70,7 +66,7 @@ class FiniteDiffJacobian(Jacobian):
         m : int
             Size of the function output vector.
         n : int, optional
-            Size of the function argument vector (default is `n` == `m`).
+            Size of the function argument vector (default is ``n`` == ``m``).
         eps : float or np.ndarray, optional
             Increment in the function's argument to use when approximating the
             Jacobian.
@@ -83,9 +79,6 @@ class FiniteDiffJacobian(Jacobian):
             If an argument passed has an unreasonable value.
 
         """
-        # Handle default arguments
-        Jacobian.__init__(self, jac=None)
-
         # Check input types and values
         if n is None:
             n = m
@@ -110,7 +103,6 @@ class FiniteDiffJacobian(Jacobian):
             eps = np.full(int(n), float(eps), dtype=np.float)
         if np.any(eps <= 0.0):
             raise ValueError("eps must be > 0.0")
-
         # Assign internal attributes
         self._function = f
         self._m = int(m)
@@ -119,19 +111,11 @@ class FiniteDiffJacobian(Jacobian):
 
 
 class ForwardDiffJacobian(FiniteDiffJacobian):
-    r"""
-    Forward difference Jacobian approximation class.
-
-    A callable object that approximates the Jacobian of a function `f` via the
-    following formula:
-    ..math:: \frac{\partial f_i(x)}{\partial x_j}
-                = \frac{f(x + \epsilon e_j) - f(x)}{\epsilon}
-
-    """
+    r"""Forward difference Jacobian approximation class."""
 
     def __call__(self, x, fx=None):
         r"""
-        Evaluate the approximate Jacobian at position `x`.
+        Evaluate the approximate Jacobian at position ``x``.
 
         Parameters
         ----------
@@ -144,7 +128,7 @@ class ForwardDiffJacobian(FiniteDiffJacobian):
         Returns
         -------
         jacobian : np.ndarray
-            Value of the approximate Jacobian at position `x`.
+            Value of the approximate Jacobian at position ``x``.
 
         """
         # Note: In order to stick to row-major iteration, this algorithm
@@ -152,14 +136,11 @@ class ForwardDiffJacobian(FiniteDiffJacobian):
         # vector. This function, being the Jacobian proper, returns the
         # transpose of the jac vector.
         jac = np.empty((self._n, self._m), dtype=np.float)
-
         # Evaluate function at x (fx = f(x)) if required
         if fx is None:
             fx = self._function(x)
-
         # Copy x to vector dx
         dx = np.copy(x)
-
         # Iterate over elements of `x` to increment
         for i in range(self._n):
             # Add forward-epsilon increment to dx (dx = x + e_i * eps_i)
@@ -173,26 +154,16 @@ class ForwardDiffJacobian(FiniteDiffJacobian):
             jac[i, :] = dfx
             # Reset dx = x
             dx[i] = x[i]
-
         # df[i]/dx[j] = transpose(jac)
         return jac.transpose()
 
 
 class CentralDiffJacobian(FiniteDiffJacobian):
-    r"""
-    Central difference Jacobian approximation class.
-
-    A callable object that approximates the Jacobian of a function `f` via the
-    following formula:
-
-    ..math:: \frac{\partial f_i(x)}{\partial x_j}
-                = \frac{f(x + \epsilon e_j) - f(x - \epsilon e_j)}{2 \epsilon}
-
-    """
+    r"""Central difference Jacobian approximation class."""
 
     def __call__(self, x):
         r"""
-        Evaluate the approximate Jacobian at position `x`.
+        Evaluate the approximate Jacobian at position ``x``.
 
         Parameters
         ----------
@@ -202,7 +173,7 @@ class CentralDiffJacobian(FiniteDiffJacobian):
         Returns
         -------
         jacobian : np.ndarray
-            Value of the approximate Jacobian at position `x`.
+            Value of the approximate Jacobian at position ``x``.
 
         """
         # Note: In order to stick to row-major iteration, this algorithm
@@ -210,10 +181,8 @@ class CentralDiffJacobian(FiniteDiffJacobian):
         # vector. This function, being the Jacobian proper, returns the
         # transpose of the jac vector.
         jac = np.empty((self._n, self._m), dtype=np.float)
-
         # Copy x to vector dx
         dx = np.copy(x)
-
         # Iterate over elements of `x` to increment
         for i in range(self._n):
             # Add forward-epsilon increment to dx (+dx = x + e_i * eps_i)
@@ -231,6 +200,5 @@ class CentralDiffJacobian(FiniteDiffJacobian):
             jac[i, :] = dfx2
             # Reset dx = x
             dx[i] = x[i]
-
         # df[i]/dx[j] = transpose(jac)
         return jac.transpose()

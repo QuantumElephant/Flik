@@ -21,8 +21,7 @@
 
 
 import numpy as np
-
-from nose.tools import assert_raises
+import numpy.testing as npt
 
 from flik import ForwardDiffJacobian
 from flik import CentralDiffJacobian
@@ -90,23 +89,23 @@ def j2(x):
 def test_finite_diff_jacobian_inputs():
     """Test invalid inputs to FiniteDiffJacobian."""
     # Test `f` argument
-    assert_raises(TypeError, ForwardDiffJacobian, "string", 2)
+    npt.assert_raises(TypeError, ForwardDiffJacobian, "string", 2)
     # Test `m` argument
-    assert_raises(TypeError, ForwardDiffJacobian, f1, 3.14159)
+    npt.assert_raises(TypeError, ForwardDiffJacobian, f1, 3.14159)
     # Test `n` argument
-    assert_raises(TypeError, ForwardDiffJacobian, f1, 2, 3.14159)
+    npt.assert_raises(TypeError, ForwardDiffJacobian, f1, 2, 3.14159)
     # Test `eps` argument
-    assert_raises(TypeError, ForwardDiffJacobian, f1, 2, eps="string")
+    npt.assert_raises(TypeError, ForwardDiffJacobian, f1, 2, eps="string")
     # Test negative `n`
-    assert_raises(ValueError, ForwardDiffJacobian, f1, -2)
+    npt.assert_raises(ValueError, ForwardDiffJacobian, f1, -2)
     # Test negative `m`
-    assert_raises(ValueError, ForwardDiffJacobian, f1, 2, -2)
+    npt.assert_raises(ValueError, ForwardDiffJacobian, f1, 2, -2)
     # Test `eps` array size
-    assert_raises(ValueError, ForwardDiffJacobian, f1, 2, eps=np.full((5,), 0.0078125))
+    npt.assert_raises(ValueError, ForwardDiffJacobian, f1, 2, eps=np.full((5,), 0.0078125))
     # Test negative `eps` scalar
-    assert_raises(ValueError, ForwardDiffJacobian, f1, 2, eps=-0.24681357)
+    npt.assert_raises(ValueError, ForwardDiffJacobian, f1, 2, eps=-0.24681357)
     # Test negative `eps` array
-    assert_raises(ValueError, ForwardDiffJacobian, f1, 2, eps=np.full((2,), -0.0078125))
+    npt.assert_raises(ValueError, ForwardDiffJacobian, f1, 2, eps=np.full((2,), -0.0078125))
 
 
 def test_forward_diff_jacobian_square():

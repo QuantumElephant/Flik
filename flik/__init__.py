@@ -25,10 +25,17 @@ Copyright (C) 2018 Ayers Lab <ayers@mcmaster.ca>.
 """
 
 
-from .nonlinear import newton_solve
-from .nonlinear import gauss_newton_solve
+from flik.nonlinear import nonlinear_solve
 
-from .approx_jacobian import ForwardDiffJacobian
-from .approx_jacobian import CentralDiffJacobian
+from flik.jacobian import Jacobian
 
-from .jacobian import Jacobian
+from flik.approx_jacobian import ForwardDiffJacobian
+from flik.approx_jacobian import CentralDiffJacobian
+
+
+__all__ = [
+    "nonlinear_solve",
+    "Jacobian",
+    "ForwardDiffJacobian",
+    "CentralDiffJacobian",
+    ]
