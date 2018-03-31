@@ -1,17 +1,12 @@
 """Test for flik.linesearch.line_search_algorithm."""
-
 import numpy as np
-
 from nose.tools import assert_raises
-from flik.linesearch.interpolations import cubic_interpolation
-from flik.linesearch.zoom import zoom
 from flik.linesearch.line_search_algorithm import line_search_strong_wolfe
 
 
-def test_initial_alpha_func_based():
-    """Test for selecting the initial alpha value (function-based)."""
+def test_line_search_strong_wolfe():
+    """Test for line search algorithm for strong wolfe condition."""
     # Set parameters
-
     def func(current_point):
         """Objective function."""
         return float(current_point**2)

@@ -55,7 +55,7 @@ def line_search_strong_wolfe(func, grad, current_point, current_step,
         current_point = np.array(current_point, dtype=float, ndmin=1)
 
     if isinstance(current_step, (int, float)):
-        current_point = np.array(current_step, dtype=float, ndmin=1)
+        current_step = np.array(current_step, dtype=float, ndmin=1)
 
     if not isinstance(c_1, float):
         raise TypeError("c_1 should be a float")
@@ -79,9 +79,8 @@ def line_search_strong_wolfe(func, grad, current_point, current_step,
         return current_step.dot(grad(current_point + alpha*current_step))
 
     previous_alpha = 0.0
-    current_alpha = cubic_interpolation(func, grad, previous_alpha,
-                                        alpha_max, current_point, current_step,
-                                        previous_alpha, alpha_max)
+    current_alpha = cubic_interpolation(current_point, func, grad, current_step,
+                                        previous_alpha, alpha_max, previous_alpha, alpha_max)
     deriv_phi_0 = deriv_phi(0.0)
 
     while True:

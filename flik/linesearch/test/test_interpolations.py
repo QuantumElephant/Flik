@@ -1,10 +1,11 @@
 """Tests for flik.linesearch.interpolations."""
 import numpy as np
-from nose.tools import assert_raises
 from numpy.testing import assert_raises
 from flik.linesearch.interpolations import cubic_interpolation, bs1, bs2, quad_approx
 
 
+# FIXME: does not test differetn cases of var fun and grad
+# FIXME: Produces negative alphas
 def test_cubic_interpolation():
     """Test the for the cubic_interpolation function with bijection."""
     def func(x):
@@ -84,11 +85,13 @@ def test_bs2():
 
 def test_quad_approx():
     """Test for quadratic approximation."""
-    #set initial parameters
+    # set initial parameters
     def func(val):
         return np.sum(val**2)
+
     def grad(val):
         return 2*val
+
     direction = -np.array([2., 6.])
     alpha = 0.5
     val = np.array([1., 2.])
@@ -97,9 +100,11 @@ def test_quad_approx():
     def func_w(val):
         return val**2
     assert_raises(TypeError, quad_approx, func_w, grad, val, alpha, direction)
+
     def grad_w(val):
         return np.sum(2*val)
     assert_raises(TypeError, quad_approx, func, grad_w, val, alpha, direction)
+
     val_w = [1, 2]
     assert_raises(TypeError, quad_approx, func, grad, val_w, alpha, direction)
     alpha_w = np.array([1, 2])
@@ -110,4 +115,4 @@ def test_quad_approx():
     # calculate new step length
     alpha_one = quad_approx(func, grad, val, alpha, direction)
 
-    assert alpha_one, 0.35
+    assert np.allclose(alpha_one, 0.35)
